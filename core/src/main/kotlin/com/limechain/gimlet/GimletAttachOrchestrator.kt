@@ -143,14 +143,7 @@ internal class GimletAttachOrchestrator(
             val registry = GimletProgramRegistry.getInstance(project)
             val artifacts = withContext(Dispatchers.IO) { registry.refresh() }
             if (artifacts.isEmpty()) {
-                val artifactsDir = settings.resolveArtifactsDir(project)
-                notify(
-                    "No `.so.debug` artifacts found under $artifactsDir. " +
-                        "Build with `cargo-build-sbf --tools-version v${settings.platformToolsVersionOrDefault} --debug --arch v1`. " +
-                        "If your `.so` / `.so.debug` files live elsewhere, set the location in " +
-                        "Settings → Tools → Gimlet → `Artifacts path` (absolute, or relative to the project root).",
-                    NotificationType.ERROR,
-                )
+                notify(emptyRegistryMessage(registry.diagnoseEmpty(), settings), NotificationType.ERROR)
                 return
             }
 
@@ -765,6 +758,34 @@ internal class GimletAttachOrchestrator(
                 }
                 delay(SESSION_END_POLL_MS)
             }
+        }
+    }
+
+    private fun emptyRegistryMessage(
+        reason: EmptyRegistryReason,
+        settings: GimletSettings.InnerState,
+    ): String {
+        val toolsVersion = settings.platformToolsVersionOrDefault
+        val buildHint = "cargo-build-sbf --tools-version v$toolsVersion --debug --arch v1"
+        val artifactsHint = "If your `.so` / `.so.debug` files live elsewhere, set " +
+            "Settings → Tools → Gimlet → `Artifacts path` (absolute, or relative to the project root)."
+        val traceHint = "If your trace lives elsewhere, set " +
+            "Settings → Tools → Gimlet → `SBF trace path` (absolute, or relative to the project root)."
+        return when (reason) {
+            is EmptyRegistryReason.ArtifactsDirMissing ->
+                "Artifacts directory not found: ${reason.artifactsDir}. " +
+                    "Build the program with `$buildHint` to create it. $artifactsHint"
+            is EmptyRegistryReason.NoSoArtifacts ->
+                "No `.so` files in ${reason.artifactsDir}. " +
+                    "Build with `$buildHint`. $artifactsHint"
+            is EmptyRegistryReason.TraceMapMissingOrEmpty ->
+                "SBF trace map not found at ${reason.mapFile}. " +
+                    "Run a debug-enabled test first (e.g. `cargo test --features sbpf-debugger`) " +
+                    "so the SBPF VM writes `program_ids.map`. $traceHint"
+            is EmptyRegistryReason.NoMatches ->
+                "Found `.so` files in ${reason.artifactsDir} and program ids in ${reason.mapFile}, " +
+                    "but no `.so` sha256 matches a recorded program id. " +
+                    "Rebuild with `$buildHint` and re-run the debug test so the map and binaries are in sync."
         }
     }
 
