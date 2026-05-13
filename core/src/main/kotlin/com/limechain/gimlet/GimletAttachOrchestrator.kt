@@ -192,6 +192,8 @@ internal class GimletAttachOrchestrator(
                 if (!settings.stopOnEntry && attached.session.isPaused) {
                     try {
                         attached.session.resume()
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (t: Throwable) {
                         LOG.warn("Gimlet: auto-resume on stopOnEntry=false threw", t)
                     }
