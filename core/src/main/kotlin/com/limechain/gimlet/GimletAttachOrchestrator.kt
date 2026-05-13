@@ -177,13 +177,24 @@ internal class GimletAttachOrchestrator(
                     LOG.info("Gimlet: next gdbstub LISTEN detected on $tcpPort (iteration ${iteration + 1})")
                 }
 
-                attachAndConfigureOnce(
+                val attached = attachAndConfigureOnce(
                     lldbPath = lldbPath,
                     tcpPort = tcpPort,
                     myEpoch = myEpoch,
                     registry = registry,
-                    stopOnEntry = settings.stopOnEntry,
                 ) ?: return
+
+                // Auto-resume after the strategy's keep-suspended block has closed and
+                // all post-attach LLDB commands have flushed - by here CIDR's initial
+                // notifyPositionReached pipeline is drained, so XDebugSession.resume()
+                // serializes cleanly instead of racing the in-flight first stop.
+                if (!settings.stopOnEntry && attached.session.isPaused) {
+                    try {
+                        attached.session.resume()
+                    } catch (t: Throwable) {
+                        LOG.warn("Gimlet: auto-resume on stopOnEntry=false threw", t)
+                    }
+                }
 
                 iteration++
             }
@@ -265,7 +276,6 @@ internal class GimletAttachOrchestrator(
         tcpPort: Int,
         myEpoch: Long,
         registry: GimletProgramRegistry,
-        stopOnEntry: Boolean,
     ): AttachedSession? = attachStrategy.withKeepProcessSuspendedAfterAttach {
         val sessionFinished = CompletableDeferred<Unit>()
         val initialPause = CompletableDeferred<Unit>()
@@ -325,7 +335,7 @@ internal class GimletAttachOrchestrator(
         }
 
         val (metadata, symbolFile) = try {
-            loadProgramModulesPostAttach(debugProcess, lldbPath, registry, stopOnEntry)
+            loadProgramModulesPostAttach(debugProcess, lldbPath, registry)
         } catch (e: CancellationException) {
             try {
                 session.stop()
@@ -373,7 +383,6 @@ internal class GimletAttachOrchestrator(
         debugProcess: CidrDebugProcess,
         lldbPath: Path,
         registry: GimletProgramRegistry,
-        @Suppress("UNUSED_PARAMETER") stopOnEntry: Boolean,
     ): Pair<GdbstubMetadata, Path> {
         LOG.info("Gimlet: loadProgramModulesPostAttach starting")
         // Diagnostic: log the LLDB version so we know which framework
@@ -414,20 +423,9 @@ internal class GimletAttachOrchestrator(
         runLldbCommand(debugProcess, "target modules load -f ${lldbQuote(symbolFile)} -s 0x0")
         LOG.info("Gimlet: loadProgramModulesPostAttach complete (symbols=${symbolFile.fileName})")
 
-        // Auto-continue is intentionally NOT issued, even when
-        // [stopOnEntry] is false. CIDR's `notifyPositionReached` from
-        // the initial gdb-remote handshake is still mid-flight when
-        // `sessionPaused` fires (the listener that completes our
-        // initialPause deferred). Issuing `continue` here lets the VM
-        // run to the next stop (e.g. a user breakpoint), and that
-        // second stop event races the in-flight first one - CIDR logs
-        // `notifyPositionReached happened while previous one is still
-        // being processed` and the session goes sideways.
-        //
-        // UX: pause at entry, the user clicks Continue once. Auto-resume
-        // comes back when we have a reliable signal for "first position
-        // pipeline is fully drained" or move through
-        // `XDebugSession.resume()` with a guard the IDE honors.
+        // Resume (when stopOnEntry=false) is handled by the caller in runChainLoop,
+        // after this returns - raw LLDB `continue` here would race CIDR's in-flight
+        // notifyPositionReached from the initial stop.
         return metadata to symbolFile
     }
 
