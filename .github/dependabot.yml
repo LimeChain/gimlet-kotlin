@@ -1,0 +1,26 @@
+# Dependabot configuration:
+# https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  # Maintain dependencies for Gradle dependencies
+  - package-ecosystem: "gradle"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "daily"
+    ignore:
+      # Kotlin must match the kotlin-stdlib bundled in the target IDE.
+      # Newer Kotlin emits debug-metadata v2 that the older bundled
+      # coroutines-debug agent rejects, crashing suspend functions on
+      # Dispatchers.EDT. Bump manually in lockstep with platformVersion.
+      - dependency-name: "org.jetbrains.kotlin*"
+      # IntelliJ Platform Gradle Plugin — runtime API surface can shift
+      # between bumps. Verify manually.
+      - dependency-name: "org.jetbrains.intellij.platform*"
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "daily"

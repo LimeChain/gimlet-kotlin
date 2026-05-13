@@ -1,0 +1,77 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>com.limechain.gimlet</id>
+    <name>Gimlet</name>
+    <vendor email="ognyan@limechain.tech" url="https://limechain.tech">LimeChain</vendor>
+
+    <!--
+      Dependency surface:
+       * com.intellij.modules.platform      - required for any IntelliJ plugin.
+       * com.intellij.modules.cidr.debugger - CIDR native debugger module
+         (LLDB driver, XDebugSession integration). Bundled in RustRover
+         via `com.intellij.nativeDebug`.
+       * com.jetbrains.rust                 - bundled Rust plugin. Provides
+         the Rust PSI we'll lean on for planned line markers next to
+         `#[test]` functions.
+    -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.cidr.debugger</depends>
+    <depends>com.jetbrains.rust</depends>
+
+    <!--
+      v2 content-module dependency. `intellij.rustrover.debugger.runners`
+      lives in the RustRover IDE core (lib/intellij.rustrover.debugger.runners.jar),
+      not in a bundled plugin we could `<depends>` on. Declaring it as
+      a `<module>` here makes
+      `com.intellij.rustrover.debugger.runners.core.RsCidrRunProfile`
+      reachable from our plugin classloader - that's the marker
+      interface our `GimletRunConfiguration` implements.
+
+      Mixing v1 `<depends>` blocks above with this v2 `<dependencies>`
+      block is supported by the IntelliJ Platform descriptor parser.
+    -->
+    <dependencies>
+        <module name="intellij.rustrover.debugger.runners"/>
+    </dependencies>
+
+    <!-- All user-visible strings route through this bundle (defined in :core). -->
+    <resource-bundle>messages.GimletBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!--
+          IDE-specific run-config façade. The shared orchestrator in :core
+          resolves this via service<AttachStrategy>() and delegates the
+          run-config construction here.
+        -->
+        <applicationService
+            serviceInterface="com.limechain.gimlet.AttachStrategy"
+            serviceImplementation="com.limechain.gimlet.rustrover.RustRoverAttachStrategy"/>
+
+        <!--
+          Our parallel run-config type. Marked editable in dumb mode so
+          the orchestrator can submit it during indexing. Users won't
+          see it in the New Run Configuration UI as a discoverable
+          option (though it'll briefly appear in the temporary-configs
+          dropdown while a debug session is alive - that's expected).
+        -->
+        <configurationType
+            implementation="com.limechain.gimlet.rustrover.GimletRunConfigurationType"/>
+
+        <notificationGroup id="Gimlet"
+                           displayType="BALLOON"
+                           bundle="messages.GimletBundle"
+                           key="notification.group.title"/>
+        <projectConfigurable parentId="tools"
+                             id="com.limechain.gimlet.settings"
+                             instance="com.limechain.gimlet.GimletConfigurable"
+                             bundle="messages.GimletBundle"
+                             key="settings.title"/>
+        <statusBarWidgetFactory id="Gimlet.StatusBar"
+                                implementation="com.limechain.gimlet.GimletStatusBarWidgetFactory"
+                                order="last"/>
+        <toolWindow id="Gimlet"
+                    anchor="right"
+                    icon="/icons/gimlet.svg"
+                    factoryClass="com.limechain.gimlet.GimletToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

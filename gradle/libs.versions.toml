@@ -1,0 +1,28 @@
+[versions]
+# libraries
+junit = "4.13.2"
+opentest4j = "1.3.0"
+
+# plugins
+changelog = "2.5.0"
+intelliJPlatform = "2.13.1"
+# Must match the kotlin-stdlib bundled in the target IDE. Compiling
+# with a newer Kotlin emits debug-metadata v2 that the older bundled
+# coroutines-debug agent rejects with `Debug metadata version mismatch.
+# Expected: 1, got 2.`, which crashes any suspend function on
+# Dispatchers.EDT. Verify the bundled stdlib (decompile
+# `kotlin.KotlinVersionCurrentValue` from `lib/util-8.jar` in the
+# downloaded IDE distribution) and bump this in lockstep with
+# platformVersion.
+kotlin = "2.2.0"
+qodana = "2026.1.0"
+
+[libraries]
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
+
+[plugins]
+changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
+intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
