@@ -15,7 +15,9 @@ internal sealed class EmptyRegistryReason {
     object NoProjectBase : EmptyRegistryReason()
     data class ArtifactsDirMissing(val artifactsDir: Path) : EmptyRegistryReason()
     data class NoSoArtifacts(val artifactsDir: Path) : EmptyRegistryReason()
-    data class TraceMapMissingOrEmpty(val mapFile: Path) : EmptyRegistryReason()
+    data class TraceMapMissing(val mapFile: Path) : EmptyRegistryReason()
+    // Covers empty file AND read errors (parseProgramIdMap returns empty on IOException).
+    data class TraceMapEmpty(val mapFile: Path) : EmptyRegistryReason()
     data class NoMatches(val artifactsDir: Path, val mapFile: Path) : EmptyRegistryReason()
 }
 
@@ -61,8 +63,8 @@ internal class GimletProgramRegistry(private val project: Project) {
         return when {
             !Files.isDirectory(artifactsDir) -> EmptyRegistryReason.ArtifactsDirMissing(artifactsDir)
             listSoFiles(artifactsDir).isEmpty() -> EmptyRegistryReason.NoSoArtifacts(artifactsDir)
-            !Files.isRegularFile(mapFile) || parseProgramIdMap(mapFile).isEmpty() ->
-                EmptyRegistryReason.TraceMapMissingOrEmpty(mapFile)
+            !Files.isRegularFile(mapFile) -> EmptyRegistryReason.TraceMapMissing(mapFile)
+            parseProgramIdMap(mapFile).isEmpty() -> EmptyRegistryReason.TraceMapEmpty(mapFile)
             else -> EmptyRegistryReason.NoMatches(artifactsDir, mapFile)
         }
     }

@@ -782,10 +782,14 @@ internal class GimletAttachOrchestrator(
             is EmptyRegistryReason.NoSoArtifacts ->
                 "No `.so` files in ${reason.artifactsDir}. " +
                     "Build with `$buildHint`. $artifactsHint"
-            is EmptyRegistryReason.TraceMapMissingOrEmpty ->
+            is EmptyRegistryReason.TraceMapMissing ->
                 "SBF trace map not found at ${reason.mapFile}. " +
                     "Run a debug-enabled test first (e.g. `cargo test --features sbpf-debugger`) " +
                     "so the SBPF VM writes `program_ids.map`. $traceHint"
+            is EmptyRegistryReason.TraceMapEmpty ->
+                "SBF trace map at ${reason.mapFile} is empty or unreadable. " +
+                    "Re-run a debug-enabled test (e.g. `cargo test --features sbpf-debugger`) " +
+                    "to rewrite it, and check file permissions if the issue persists. $traceHint"
             is EmptyRegistryReason.NoMatches ->
                 "Found `.so` files in ${reason.artifactsDir} and program ids in ${reason.mapFile}, " +
                     "but no `.so` sha256 matches a recorded program id. " +
