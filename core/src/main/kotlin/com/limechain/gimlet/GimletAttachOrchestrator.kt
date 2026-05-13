@@ -146,7 +146,9 @@ internal class GimletAttachOrchestrator(
                 val artifactsDir = settings.resolveArtifactsDir(project)
                 notify(
                     "No `.so.debug` artifacts found under $artifactsDir. " +
-                        "Build with `cargo-build-sbf --tools-version v${settings.platformToolsVersionOrDefault} --debug --arch v1`.",
+                        "Build with `cargo-build-sbf --tools-version v${settings.platformToolsVersionOrDefault} --debug --arch v1`. " +
+                        "If your `.so` / `.so.debug` files live elsewhere, set the location in " +
+                        "Settings → Tools → Gimlet → `Artifacts path` (absolute, or relative to the project root).",
                     NotificationType.ERROR,
                 )
                 return
