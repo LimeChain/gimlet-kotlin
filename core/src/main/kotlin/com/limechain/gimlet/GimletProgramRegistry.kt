@@ -12,6 +12,7 @@ import java.nio.file.attribute.FileTime
 import java.security.MessageDigest
 
 internal sealed class EmptyRegistryReason {
+    object NoProjectBase : EmptyRegistryReason()
     data class ArtifactsDirMissing(val artifactsDir: Path) : EmptyRegistryReason()
     data class NoSoArtifacts(val artifactsDir: Path) : EmptyRegistryReason()
     data class TraceMapMissingOrEmpty(val mapFile: Path) : EmptyRegistryReason()
@@ -51,7 +52,9 @@ internal class GimletProgramRegistry(private val project: Project) {
 
     // Order matters: artifacts-side checks first - if the build is missing,
     // the trace map is irrelevant. Empty map is folded into missing.
+    // basePath guard mirrors resolveDeployDir() - resolve* would throw on null.
     fun diagnoseEmpty(): EmptyRegistryReason {
+        if (project.basePath == null) return EmptyRegistryReason.NoProjectBase
         val settings = GimletSettings.getInstance(project).state
         val artifactsDir = settings.resolveArtifactsDir(project)
         val mapFile = settings.resolveSbfTraceDir(project).resolve("program_ids.map")

@@ -770,6 +770,9 @@ internal class GimletAttachOrchestrator(
         val traceHint = "If your trace lives elsewhere, set " +
             "Settings → Tools → Gimlet → `SBF trace path` (absolute, or relative to the project root)."
         return when (reason) {
+            is EmptyRegistryReason.NoProjectBase ->
+                "Gimlet can't resolve paths: the project has no base directory yet. " +
+                    "Wait for the project to finish loading and retry."
             is EmptyRegistryReason.ArtifactsDirMissing ->
                 "Artifacts directory not found: ${reason.artifactsDir}. " +
                     "Build the program with `$buildHint` to create it. $artifactsHint"
