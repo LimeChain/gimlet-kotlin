@@ -143,7 +143,8 @@ internal class GimletAttachOrchestrator(
             val registry = GimletProgramRegistry.getInstance(project)
             val artifacts = withContext(Dispatchers.IO) { registry.refresh() }
             if (artifacts.isEmpty()) {
-                notify(emptyRegistryMessage(registry.diagnoseEmpty(), settings), NotificationType.ERROR)
+                val reason = withContext(Dispatchers.IO) { registry.diagnoseEmpty() }
+                notify(emptyRegistryMessage(reason, settings), NotificationType.ERROR)
                 return
             }
 
