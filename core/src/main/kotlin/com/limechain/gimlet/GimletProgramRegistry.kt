@@ -11,6 +11,16 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.security.MessageDigest
 
+internal sealed class EmptyRegistryReason {
+    object NoProjectBase : EmptyRegistryReason()
+    data class ArtifactsDirMissing(val artifactsDir: Path) : EmptyRegistryReason()
+    data class NoSoArtifacts(val artifactsDir: Path) : EmptyRegistryReason()
+    data class TraceMapMissing(val mapFile: Path) : EmptyRegistryReason()
+    // Covers empty file AND read errors (parseProgramIdMap returns empty on IOException).
+    data class TraceMapEmpty(val mapFile: Path) : EmptyRegistryReason()
+    data class NoMatches(val artifactsDir: Path, val mapFile: Path) : EmptyRegistryReason()
+}
+
 /**
  * Maps runtime Solana program ids to the compiled artifacts on disk.
  *
@@ -41,6 +51,23 @@ internal class GimletProgramRegistry(private val project: Project) {
 
     fun findByProgramId(programId: String): SbpfProgramArtifact? =
         artifacts.firstOrNull { it.programId == programId }
+
+    // Order matters: artifacts-side checks first - if the build is missing,
+    // the trace map is irrelevant.
+    // basePath guard mirrors resolveDeployDir() - resolve* would throw on null.
+    fun diagnoseEmpty(): EmptyRegistryReason {
+        if (project.basePath == null) return EmptyRegistryReason.NoProjectBase
+        val settings = GimletSettings.getInstance(project).state
+        val artifactsDir = settings.resolveArtifactsDir(project)
+        val mapFile = settings.resolveSbfTraceDir(project).resolve("program_ids.map")
+        return when {
+            !Files.isDirectory(artifactsDir) -> EmptyRegistryReason.ArtifactsDirMissing(artifactsDir)
+            listSoFiles(artifactsDir).isEmpty() -> EmptyRegistryReason.NoSoArtifacts(artifactsDir)
+            !Files.isRegularFile(mapFile) -> EmptyRegistryReason.TraceMapMissing(mapFile)
+            parseProgramIdMap(mapFile).isEmpty() -> EmptyRegistryReason.TraceMapEmpty(mapFile)
+            else -> EmptyRegistryReason.NoMatches(artifactsDir, mapFile)
+        }
+    }
 
     /**
      * Re-scan the deploy dir. Returns the current [artifacts] snapshot.

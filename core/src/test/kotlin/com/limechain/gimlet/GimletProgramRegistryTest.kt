@@ -151,6 +151,65 @@ class GimletProgramRegistryTest : BasePlatformTestCase() {
         assertNull(registry.findByProgramId("ProgMissing"))
     }
 
+    // ---------- diagnoseEmpty() ----------
+
+    fun testDiagnoseEmpty_artifactsDirMissing() {
+        projectBase.resolve("target/deploy").toFile().deleteRecursively()
+        writeProgramIdMap("ProgA" to "any-sha")
+        assertEquals(
+            EmptyRegistryReason.ArtifactsDirMissing(deployDir),
+            registry.diagnoseEmpty(),
+        )
+    }
+
+    fun testDiagnoseEmpty_noSoArtifacts() {
+        // deploy dir exists but is empty; trace map populated
+        writeProgramIdMap("ProgA" to "any-sha")
+        assertEquals(
+            EmptyRegistryReason.NoSoArtifacts(deployDir),
+            registry.diagnoseEmpty(),
+        )
+    }
+
+    fun testDiagnoseEmpty_traceMapMissing() {
+        writeSoWithDebug("primary", "bytes".toByteArray())
+        // intentionally no program_ids.map
+        assertEquals(
+            EmptyRegistryReason.TraceMapMissing(traceDir.resolve("program_ids.map")),
+            registry.diagnoseEmpty(),
+        )
+    }
+
+    fun testDiagnoseEmpty_traceMapEmpty() {
+        writeSoWithDebug("primary", "bytes".toByteArray())
+        Files.writeString(traceDir.resolve("program_ids.map"), "")
+        assertEquals(
+            EmptyRegistryReason.TraceMapEmpty(traceDir.resolve("program_ids.map")),
+            registry.diagnoseEmpty(),
+        )
+    }
+
+    fun testDiagnoseEmpty_noMatches() {
+        writeSoWithDebug("primary", "bytes".toByteArray())
+        writeProgramIdMap("ProgA" to "sha-that-matches-no-so")
+        assertEquals(
+            EmptyRegistryReason.NoMatches(deployDir, traceDir.resolve("program_ids.map")),
+            registry.diagnoseEmpty(),
+        )
+    }
+
+    fun testDiagnoseEmpty_precedence_artifactsDirBeatsTraceMap() {
+        // both bad - artifacts side must win so the user is told to build first
+        // before being asked to run a debug test.
+        projectBase.resolve("target/deploy").toFile().deleteRecursively()
+        // trace map intentionally not written either
+        val reason = registry.diagnoseEmpty()
+        assertTrue(
+            "expected ArtifactsDirMissing to take precedence, got $reason",
+            reason is EmptyRegistryReason.ArtifactsDirMissing,
+        )
+    }
+
     fun testGetArtifactsReturnsSnapshotOfLastRefresh() {
         val shaFirst = writeSoWithDebug("primary", "first".toByteArray())
         writeProgramIdMap("ProgA" to shaFirst)
