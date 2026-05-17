@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 // :rustrover is the only plugin artifact today. It owns the plugin
@@ -100,7 +101,9 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            recommended()
+            create(IntelliJPlatformType.RustRover, providers.gradleProperty("platformVersion")) {
+                useInstaller = false
+            }
         }
     }
 }
