@@ -53,7 +53,7 @@ internal class GimletProgramRegistry(private val project: Project) {
         artifacts.firstOrNull { it.programId == programId }
 
     // Order matters: artifacts-side checks first - if the build is missing,
-    // the trace map is irrelevant. Empty map is folded into missing.
+    // the trace map is irrelevant.
     // basePath guard mirrors resolveDeployDir() - resolve* would throw on null.
     fun diagnoseEmpty(): EmptyRegistryReason {
         if (project.basePath == null) return EmptyRegistryReason.NoProjectBase
