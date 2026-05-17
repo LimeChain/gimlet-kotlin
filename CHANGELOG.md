@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-05-17
+
+### Fixed
+
+- "No artifacts found" error message. ([#1](https://github.com/LimeChain/gimlet-kotlin/pull/1))
+- `stop on program entry = false` now auto-resumes. ([#1](https://github.com/LimeChain/gimlet-kotlin/pull/1))
+- Marketplace compatibility scoped to RustRover only. ([#4](https://github.com/LimeChain/gimlet-kotlin/pull/4))
+
 ## [0.1.1] - 2026-05-13
 
 ### Added
