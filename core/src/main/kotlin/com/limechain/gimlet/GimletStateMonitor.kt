@@ -17,6 +17,8 @@ import java.net.BindException
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<GimletStateMonitor>()
 
@@ -57,7 +59,7 @@ internal class GimletStateMonitor(
         // Re-probe immediately when settings change (notably the TCP
         // port). Without this, after a settings flip the state would
         // sit on its last value until the next regular tick - up to
-        // [IDLE_POLL_MS] - which the user perceives as a transient
+        // [IDLE_POLL] - which the user perceives as a transient
         // wrong state in the tool window.
         project.messageBus.connect(this)
             .subscribe(GimletSettings.TOPIC, GimletSettingsListener { nudge() })
@@ -97,8 +99,8 @@ internal class GimletStateMonitor(
         tickJob = cs.launch {
             while (isActive) {
                 tick()
-                val delayMs = if (state == GimletState.IDLE) IDLE_POLL_MS else ACTIVE_POLL_MS
-                delay(delayMs)
+                val sleep = if (state == GimletState.IDLE) IDLE_POLL else ACTIVE_POLL
+                delay(sleep)
             }
         }
     }
@@ -144,8 +146,8 @@ internal class GimletStateMonitor(
         // Active poll is 1s so the UI flips to READY within a second of
         // the gdbstub binding; idle poll backs off to 2s since "nothing
         // happening" is the steady state.
-        private const val ACTIVE_POLL_MS = 1_000L
-        private const val IDLE_POLL_MS = 2_000L
+        private val ACTIVE_POLL: Duration = 1.seconds
+        private val IDLE_POLL: Duration = 2.seconds
 
         @JvmField
         val TOPIC: Topic<GimletStateListener> =

@@ -12,7 +12,6 @@ import com.intellij.xdebugger.XDebugSessionListener
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.XDebuggerManagerListener
 import com.jetbrains.cidr.execution.debugger.CidrDebugProcess
-import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import kotlinx.coroutines.CancellationException
@@ -33,6 +32,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<GimletAttachOrchestrator>()
 
@@ -163,7 +165,7 @@ internal class GimletAttachOrchestrator(
             //      is alive, wait indefinitely (a future CPI may hit at
             //      any time); when [activeSessions] becomes empty, start
             //      a grace timer and exit if no LISTEN appears within
-            //      [NEXT_PROGRAM_TIMEOUT_MS].
+            //      [NEXT_PROGRAM_TIMEOUT].
             //   2. Attach a new CIDR session.
             //   3. Register it for tracking; loop continues.
             var iteration = 0
@@ -171,7 +173,7 @@ internal class GimletAttachOrchestrator(
                 val nextDetected = awaitNextListenWithGrace(tcpPort, myEpoch)
                 if (epoch.get() != myEpoch) return
                 if (!nextDetected) {
-                    LOG.info("Gimlet: no next gdbstub within ${NEXT_PROGRAM_TIMEOUT_MS / 1000}s and no sessions alive; ending chain")
+                    LOG.info("Gimlet: no next gdbstub within ${NEXT_PROGRAM_TIMEOUT.inWholeSeconds}s and no sessions alive; ending chain")
                     return
                 }
                 if (iteration > 0) {
@@ -308,14 +310,14 @@ internal class GimletAttachOrchestrator(
         // forcePauseAfterAttach.
         val requiresInitialPause = attachStrategy.requiresInitialPauseAfterAttach()
         val pauseObserved = if (requiresInitialPause) {
-            withTimeoutOrNull(ATTACH_WAIT_MS) { initialPause.await() } != null
+            withTimeoutOrNull(ATTACH_WAIT) { initialPause.await() } != null
         } else {
             initialPause.isCompleted || session.isPaused
         }
         if (!pauseObserved && requiresInitialPause) {
             notify(
                 "LLDB attached, but the session never paused at entry within " +
-                    "${ATTACH_WAIT_MS / 1000}s. Stopping.",
+                    "${ATTACH_WAIT.inWholeSeconds}s. Stopping.",
                 NotificationType.ERROR,
             )
             try {
@@ -561,7 +563,7 @@ internal class GimletAttachOrchestrator(
      * activates only when [activeSessions] is empty. Returns:
      *  - `true` if a `LISTEN` was observed (chain proceeds).
      *  - `false` if [activeSessions] has been empty for more than
-     *    [NEXT_PROGRAM_TIMEOUT_MS] without any LISTEN - the test process
+     *    [NEXT_PROGRAM_TIMEOUT] without any LISTEN - the test process
      *    finished and the chain should exit cleanly. Re-evaluates
      *    [activeSessions] each poll, so sessions ending mid-wait flip
      *    the wait into grace mode.
@@ -572,13 +574,13 @@ internal class GimletAttachOrchestrator(
             if (withContext(Dispatchers.IO) { isPortListening(port) }) return true
             if (activeSessions.isEmpty()) {
                 if (graceUntilMs == Long.MAX_VALUE) {
-                    graceUntilMs = System.currentTimeMillis() + NEXT_PROGRAM_TIMEOUT_MS
+                    graceUntilMs = System.currentTimeMillis() + NEXT_PROGRAM_TIMEOUT.inWholeMilliseconds
                 }
                 if (System.currentTimeMillis() >= graceUntilMs) return false
             } else {
                 graceUntilMs = Long.MAX_VALUE
             }
-            delay(NEXT_PROGRAM_POLL_MS)
+            delay(NEXT_PROGRAM_POLL)
         }
         return false
     }
@@ -598,7 +600,7 @@ internal class GimletAttachOrchestrator(
             val process = ProcessBuilder("lsof", "-nP", "-iTCP:$port", "-sTCP:LISTEN")
                 .redirectErrorStream(true)
                 .start()
-            if (!process.waitFor(LSOF_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+            if (!process.waitFor(LSOF_TIMEOUT.inWholeMilliseconds, TimeUnit.MILLISECONDS)) {
                 process.destroyForcibly()
                 LOG.warn("Gimlet: lsof port probe for $port timed out")
                 return false
@@ -621,16 +623,17 @@ internal class GimletAttachOrchestrator(
         debugProcess: CidrDebugProcess,
         command: String,
     ): String = withContext(Dispatchers.IO) {
-        val future = debugProcess.postCommand(object : CidrDebugProcess.DebuggerCommand<String> {
-            override fun call(driver: DebuggerDriver): String =
+        val future = debugProcess.postCommand(
+            CidrDebugProcess.DebuggerCommand { driver ->
                 driver.executeInterpreterCommand(command)
-        })
+            },
+        )
         try {
-            future.get(LLDB_COMMAND_WAIT_MS, TimeUnit.MILLISECONDS)
+            future.get(LLDB_COMMAND_WAIT.inWholeMilliseconds, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {
             future.cancel(true)
             throw IllegalStateException(
-                "LLDB command timed out after ${LLDB_COMMAND_WAIT_MS / 1000}s: ${command.take(120)}",
+                "LLDB command timed out after ${LLDB_COMMAND_WAIT.inWholeSeconds}s: ${command.take(120)}",
                 e,
             )
         } catch (e: ExecutionException) {
@@ -687,10 +690,10 @@ internal class GimletAttachOrchestrator(
             // sessionName so the XDebuggerManagerListener subscription
             // above can correlate processStarted to this submission.
             attachStrategy.submitAttach(project, lldbPath, tcpPort, sessionName)
-            val debugProcess = withTimeoutOrNull(ATTACH_WAIT_MS) { processCaptured.await() }
+            val debugProcess = withTimeoutOrNull(ATTACH_WAIT) { processCaptured.await() }
             if (debugProcess == null) {
                 notify(
-                    "LLDB attach didn't complete within ${ATTACH_WAIT_MS / 1000}s. " +
+                    "LLDB attach didn't complete within ${ATTACH_WAIT.inWholeSeconds}s. " +
                         "Make sure cargo test is running with the sbpf-debugger feature.",
                     NotificationType.ERROR,
                 )
@@ -757,7 +760,7 @@ internal class GimletAttachOrchestrator(
                     complete("watchdog (session.isStopped)")
                     return@launch
                 }
-                delay(SESSION_END_POLL_MS)
+                delay(SESSION_END_POLL)
             }
         }
     }
@@ -805,16 +808,16 @@ internal class GimletAttachOrchestrator(
     }
 
     companion object {
-        private const val ATTACH_WAIT_MS: Long = 15_000
-        private const val LLDB_COMMAND_WAIT_MS: Long = 30_000
-        private const val NEXT_PROGRAM_POLL_MS: Long = 500
+        private val ATTACH_WAIT: Duration = 15.seconds
+        private val LLDB_COMMAND_WAIT: Duration = 30.seconds
+        private val NEXT_PROGRAM_POLL: Duration = 500.milliseconds
         // Cleanup grace - if no next gdbstub appears within this window
         // after a session ends, treat the test as done (or panicked) and
         // exit the loop cleanly instead of hanging on awaitPortListening
         // forever.
-        private const val NEXT_PROGRAM_TIMEOUT_MS: Long = 2_000
-        private const val SESSION_END_POLL_MS: Long = 1_000
-        private const val LSOF_TIMEOUT_MS: Long = 1_500
+        private val NEXT_PROGRAM_TIMEOUT: Duration = 2.seconds
+        private val SESSION_END_POLL: Duration = 1.seconds
+        private val LSOF_TIMEOUT: Duration = 1_500.milliseconds
 
         /**
          * platform-tools LLDB Python helpers. Order matters:

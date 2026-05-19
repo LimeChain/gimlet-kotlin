@@ -10,7 +10,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.xdebugger.XDebugSessionListener
 import com.jetbrains.cidr.execution.debugger.CidrDebugProcess
-import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.limechain.gimlet.AttachStrategy
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +19,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<RustRoverAttachStrategy>()
 
@@ -77,7 +79,7 @@ internal class RustRoverAttachStrategy : AttachStrategy {
         session.addSessionListener(listener)
         try {
             val attached = withContext(Dispatchers.IO) {
-                debugProcess.waitForAttach(ATTACH_READY_WAIT_MS.toInt())
+                debugProcess.waitForAttach(ATTACH_READY_WAIT.inWholeMilliseconds.toInt())
             }
             if (!attached) {
                 LOG.warn(
@@ -87,7 +89,7 @@ internal class RustRoverAttachStrategy : AttachStrategy {
             }
 
             if (session.isPaused) {
-                withTimeoutOrNull(AUTO_RESUME_WAIT_MS) { sessionResumed.await() }
+                withTimeoutOrNull(AUTO_RESUME_WAIT) { sessionResumed.await() }
             }
             if (session.isPaused) {
                 LOG.info("Gimlet RR: session already paused after attach; no process interrupt needed")
@@ -100,7 +102,7 @@ internal class RustRoverAttachStrategy : AttachStrategy {
             // for its `target modules add` etc. commands.
             val interruptOutput = interruptProcess(debugProcess)
             if (interruptOutput.contains("requires a current process", ignoreCase = true)) {
-                delay(RETRY_AFTER_NO_PROCESS_MS)
+                delay(RETRY_AFTER_NO_PROCESS)
                 val retryOutput = interruptProcess(debugProcess)
                 if (retryOutput.contains("requires a current process", ignoreCase = true)) {
                     LOG.warn(
@@ -115,11 +117,11 @@ internal class RustRoverAttachStrategy : AttachStrategy {
             // proceed anyway - the metadata read will either succeed
             // (target was already in Idle) or the orchestrator will
             // surface the resulting parse failure as before.
-            withTimeoutOrNull(PAUSE_AFTER_INTERRUPT_MS) { sessionPaused.await() }
+            withTimeoutOrNull(PAUSE_AFTER_INTERRUPT) { sessionPaused.await() }
             // Settle: sbpf's state machine just transitioned through
             // CtrlCInterrupt → Idle; let the next interpreter command
             // arrive after that transition completes.
-            delay(POST_INTERRUPT_SETTLE_MS)
+            delay(POST_INTERRUPT_SETTLE)
             LOG.info(
                 "Gimlet RR: process interrupt issued; " +
                     "sessionPaused=${sessionPaused.isCompleted}, " +
@@ -139,12 +141,11 @@ internal class RustRoverAttachStrategy : AttachStrategy {
     private suspend fun interruptProcess(debugProcess: CidrDebugProcess): String =
         withContext(Dispatchers.IO) {
             val future = debugProcess.postCommand(
-                object : CidrDebugProcess.DebuggerCommand<String> {
-                    override fun call(driver: DebuggerDriver): String =
-                        driver.executeInterpreterCommand("process interrupt")
+                CidrDebugProcess.DebuggerCommand { driver ->
+                    driver.executeInterpreterCommand("process interrupt")
                 },
             )
-            future.get(INTERRUPT_WAIT_MS, TimeUnit.MILLISECONDS)
+            future.get(INTERRUPT_WAIT.inWholeMilliseconds, TimeUnit.MILLISECONDS)
         }
 
     override suspend fun submitAttach(
@@ -205,16 +206,16 @@ internal class RustRoverAttachStrategy : AttachStrategy {
         // buffer once per BPF instruction - fast in principle, but
         // stragglers happen when the BPF program is in a tight loop
         // or doing a long allocation. 30 s matches the orchestrator's
-        // LLDB_COMMAND_WAIT_MS for other interpreter commands.
-        private const val ATTACH_READY_WAIT_MS: Long = 5_000
-        private const val INTERRUPT_WAIT_MS: Long = 30_000
-        private const val AUTO_RESUME_WAIT_MS: Long = 500
-        private const val PAUSE_AFTER_INTERRUPT_MS: Long = 5_000
-        private const val RETRY_AFTER_NO_PROCESS_MS: Long = 500
+        // LLDB_COMMAND_WAIT for other interpreter commands.
+        private val ATTACH_READY_WAIT: Duration = 5.seconds
+        private val INTERRUPT_WAIT: Duration = 30.seconds
+        private val AUTO_RESUME_WAIT: Duration = 500.milliseconds
+        private val PAUSE_AFTER_INTERRUPT: Duration = 5.seconds
+        private val RETRY_AFTER_NO_PROCESS: Duration = 500.milliseconds
         // After the interrupt returns and sessionPaused fires, give
         // sbpf's state machine a beat to complete the
         // CtrlCInterrupt → Idle transition before the orchestrator
         // queues the metadata-read packet.
-        private const val POST_INTERRUPT_SETTLE_MS: Long = 250
+        private val POST_INTERRUPT_SETTLE: Duration = 250.milliseconds
     }
 }

@@ -159,6 +159,7 @@ class GimletRemoteGdbDebugProcess(
  * Class is `public` (not `internal`) for the same per-module
  * visibility reason as [GimletRemoteGdbDebugProcess].
  */
+@Suppress("UnstableApiUsage")
 class GimletLLDBDriverConfiguration(
     lldbBinary: Path,
 ) : LLDBDriverConfiguration() {

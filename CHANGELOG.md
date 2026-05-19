@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Address qodana code inspections (internal cleanup, no behavior change). ([#5](https://github.com/LimeChain/gimlet-kotlin/pull/5))
+
 ## [0.1.2] - 2026-05-17
 
 ### Fixed
