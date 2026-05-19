@@ -166,6 +166,13 @@ jobs:
     name: Verify plugin
     needs: [ build ]
     runs-on: ubuntu-latest
+    # Advisory only: the standalone IntelliJ Plugin Verifier does not yet
+    # register RustRover (product code RR) in its supported-IDE enum, so
+    # verifyPlugin crashes against any RustRover 2026.1.x build. The
+    # Marketplace runs verification server-side at publish, so this is
+    # safe to skip locally. Re-enable strict mode once upstream adds RR
+    # support (track JetBrains/intellij-plugin-verifier).
+    continue-on-error: true
     steps:
 
       # Free GitHub Actions Environment Disk Space

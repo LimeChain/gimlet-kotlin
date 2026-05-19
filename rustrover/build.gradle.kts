@@ -101,9 +101,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            create(IntelliJPlatformType.RustRover, providers.gradleProperty("platformVersion")) {
-                useInstaller = false
-            }
+            create(IntelliJPlatformType.RustRover, providers.gradleProperty("platformVersion"))
         }
     }
 }
