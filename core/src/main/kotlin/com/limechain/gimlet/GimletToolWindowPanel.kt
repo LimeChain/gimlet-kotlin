@@ -170,12 +170,12 @@ internal class GimletToolWindowPanel(
         return when (state) {
             GimletState.IDLE -> {
                 val tracePath = settings.sbfTracePath?.takeIf { it.isNotBlank() } ?: "target/sbf/trace"
-                """
-                    <html>Gimlet attaches once a test process binds to port <b>$port</b> with the sbpf-debugger.<br><br>
+                $$"""
+                    <html>Gimlet attaches once a test process binds to port <b>$${port}</b> with the sbpf-debugger.<br><br>
                     For Mollusk / LiteSVM, enable the <code>sbpf-debugger</code> feature on the <code>litesvm</code> / <code>mollusk-svm</code> dependency in your <code>Cargo.toml</code>, then build your programs:<br>
-                    &nbsp;&nbsp;<code>RUSTFLAGS="-Copt-level=0 -C strip=none -C debuginfo=2" cargo-build-sbf --tools-version v$version --debug --arch v1</code><br><br>
+                    &nbsp;&nbsp;<code>RUSTFLAGS="-Copt-level=0 -C strip=none -C debuginfo=2" cargo-build-sbf --tools-version v$${version} --debug --arch v1</code><br><br>
                     And finally, run your test:<br>
-                    &nbsp;&nbsp;<code>SBF_DEBUG_PORT=$port SBF_TRACE_DIR=${'$'}PWD/$tracePath cargo test</code><br><br>
+                    &nbsp;&nbsp;<code>SBF_DEBUG_PORT=$${port} SBF_TRACE_DIR=$PWD/$${tracePath} cargo test</code><br><br>
                     This view flips to <b>Ready</b> once the port is bound.</html>
                 """.trimIndent()
             }

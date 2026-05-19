@@ -69,7 +69,7 @@ internal class GimletCidrLauncher(
             }
         }
         failure?.let {
-            throw if (it is ExecutionException) it else ExecutionException(it)
+            throw (it as? ExecutionException) ?: ExecutionException(it)
         }
         return process
             ?: throw ExecutionException("Gimlet RR launcher: createDebugProcess returned null without a failure")
@@ -96,7 +96,7 @@ internal class GimletCidrLauncher(
         configProcessHandler(
             process.processHandler,
             process.isDetachDefault,
-            /* showProcessKilledMessage = */ false,
+            /* reportExitCode = */ false,
             project,
         )
         LOG.info(

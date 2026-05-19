@@ -103,8 +103,6 @@ internal object GimletRunConfigurationType : ConfigurationType {
 
     override fun getId(): String = "GimletAttach.RustRover"
     override fun getConfigurationFactories(): Array<ConfigurationFactory> = arrayOf(factory)
-
-    fun factory(): ConfigurationFactory = factory
 }
 
 internal class GimletRunConfigurationFactory(
