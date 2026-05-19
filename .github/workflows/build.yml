@@ -256,7 +256,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$(./gradlew properties --property version --quiet --console=plain | tail -n 1 | cut -f2- -d ' ')
+          VERSION=$(./gradlew :rustrover:properties --property version --quiet --console=plain | tail -n 1 | cut -f2- -d ' ')
           RELEASE_NOTE="${{ github.workspace }}/build/tmp/release_note.txt"
           ./gradlew :rustrover:getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
 

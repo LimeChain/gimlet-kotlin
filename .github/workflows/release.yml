@@ -50,11 +50,11 @@ jobs:
         env:
           CHANGELOG: ${{ github.event.release.body }}
         run: |
-          RELEASE_NOTE="./build/tmp/release_note.txt"
+          RELEASE_NOTE="${{ github.workspace }}/build/tmp/release_note.txt"
           mkdir -p "$(dirname "$RELEASE_NOTE")"
           echo "$CHANGELOG" > $RELEASE_NOTE
 
-          ./gradlew patchChangelog --release-note-file=$RELEASE_NOTE
+          ./gradlew :rustrover:patchChangelog --release-note-file="$RELEASE_NOTE"
 
       # Publish the plugin to JetBrains Marketplace. Targeting the
       # subproject explicitly so `:core` (which has publishPlugin
