@@ -2,7 +2,7 @@
 <idea-plugin>
     <id>com.limechain.gimlet</id>
     <name>Gimlet</name>
-    <vendor email="ognyan@limechain.tech" url="https://limechain.tech">LimeChain</vendor>
+    <vendor email="plugin-support@limechain.tech" url="https://limechain.tech">LimeChain</vendor>
 
     <!--
       Dependency surface:
