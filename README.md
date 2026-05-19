@@ -11,6 +11,8 @@ matching `.so.debug` symbols, pausing at your breakpoint. Cross-program
 invocations (CPIs) auto-attach new concurrent debug sessions for the
 inner programs - breakpoints in any program in the chain hit with
 correct source resolution.
+
+![Gimlet](https://raw.githubusercontent.com/LimeChain/gimlet-kotlin/main/images/gimlet.png)
 <!-- Plugin description end -->
 
 ---
