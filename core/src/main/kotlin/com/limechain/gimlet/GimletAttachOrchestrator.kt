@@ -12,7 +12,6 @@ import com.intellij.xdebugger.XDebugSessionListener
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.XDebuggerManagerListener
 import com.jetbrains.cidr.execution.debugger.CidrDebugProcess
-import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import kotlinx.coroutines.CancellationException
@@ -625,7 +624,7 @@ internal class GimletAttachOrchestrator(
         command: String,
     ): String = withContext(Dispatchers.IO) {
         val future = debugProcess.postCommand(
-            CidrDebugProcess.DebuggerCommand<String> { driver ->
+            CidrDebugProcess.DebuggerCommand { driver ->
                 driver.executeInterpreterCommand(command)
             },
         )

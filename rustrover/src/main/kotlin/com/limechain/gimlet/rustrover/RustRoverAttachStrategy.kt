@@ -10,7 +10,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.xdebugger.XDebugSessionListener
 import com.jetbrains.cidr.execution.debugger.CidrDebugProcess
-import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.limechain.gimlet.AttachStrategy
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -142,7 +141,7 @@ internal class RustRoverAttachStrategy : AttachStrategy {
     private suspend fun interruptProcess(debugProcess: CidrDebugProcess): String =
         withContext(Dispatchers.IO) {
             val future = debugProcess.postCommand(
-                CidrDebugProcess.DebuggerCommand<String> { driver ->
+                CidrDebugProcess.DebuggerCommand { driver ->
                     driver.executeInterpreterCommand("process interrupt")
                 },
             )
