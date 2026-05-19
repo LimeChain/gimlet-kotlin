@@ -2,9 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-05-19
+
 ### Changed
 
-- Address qodana code inspections (internal cleanup, no behavior change). ([#5](https://github.com/LimeChain/gimlet-kotlin/pull/5))
+- chore: address qodana inspections by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/5
+- mark verifyPlugin job as advisory by @ERoydev in https://github.com/LimeChain/gimlet-kotlin/pull/2
 
 ## [0.1.2] - 2026-05-17
 
@@ -40,3 +43,8 @@
 - RustRover 2026.1.1 or later (build number 261.23567+).
 - Solana platform-tools v1.54 (installed via the Solana CLI).
 - macOS or Linux.
+
+[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.3...HEAD
+[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.2...0.1.3
+[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.1...0.1.2
+[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/0.1.1
