@@ -15,7 +15,7 @@ intelliJPlatform = "2.13.1"
 # downloaded IDE distribution) and bump this in lockstep with
 # platformVersion.
 kotlin = "2.2.0"
-qodana = "2026.1.0"
+qodana = "2026.1.3"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
