@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-### Changed
+## [0.1.4] - 2026-06-21
 
 - docs: add debug-session screenshot in README by @failfmi
 - docs: bump referenced mollusk-svm version to v0.13.0 by @failfmi
-- docs: LiteSVM sbpf-debugger support by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/11
 - ci(release): prefix release tags with v and CHANGELOG compare links by @failfmi
+- chore(deps): bump JetBrains/qodana-action from 2026.1.0 to 2026.1.3 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/7
+- chore(deps): bump org.jetbrains.qodana from 2026.1.0 to 2026.1.3 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/8
+- chore(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/9
+- chore(deps): bump gradle-wrapper from 9.5.1 to 9.6.0 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/10
+- docs: LiteSVM sbpf-debugger support by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/11
 - ci: re-enable strict plugin verification by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/12
+- @github-actions[bot] made their first contribution in https://github.com/LimeChain/gimlet-kotlin/pull/6
+- @dependabot[bot] made their first contribution in https://github.com/LimeChain/gimlet-kotlin/pull/7
 
 ## [0.1.3] - 2026-05-19
 
@@ -52,7 +58,8 @@
 - Solana platform-tools v1.54 (installed via the Solana CLI).
 - macOS or Linux.
 
-[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/v0.1.1
