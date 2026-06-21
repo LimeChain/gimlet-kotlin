@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- docs: add debug-session screenshot in README by @failfmi
+- docs: bump referenced mollusk-svm version to v0.13.0 by @failfmi
+- docs: LiteSVM sbpf-debugger support by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/11
+- ci(release): prefix release tags with v and CHANGELOG compare links by @failfmi
+- ci: re-enable strict plugin verification by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/12
+
 ## [0.1.3] - 2026-05-19
 
 ### Changed
