@@ -6,6 +6,7 @@
 
 - docs: add debug-session screenshot in README by @failfmi
 - docs: bump referenced mollusk-svm version to v0.13.0 by @failfmi
+- ci(release): prefix release tags with v and CHANGELOG compare links by @failfmi
 - chore(deps): bump JetBrains/qodana-action from 2026.1.0 to 2026.1.3 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/7
 - chore(deps): bump org.jetbrains.qodana from 2026.1.0 to 2026.1.3 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/8
 - chore(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/9
@@ -57,8 +58,8 @@
 - Solana platform-tools v1.54 (installed via the Solana CLI).
 - macOS or Linux.
 
-[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.4...HEAD
-[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.3...0.1.4
-[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.2...0.1.3
-[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.1...0.1.2
-[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/0.1.1
+[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/v0.1.1
