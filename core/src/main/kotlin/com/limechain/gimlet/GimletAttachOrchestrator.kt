@@ -592,25 +592,10 @@ internal class GimletAttachOrchestrator(
      * `LISTEN` identically - both throw `BindException`. That's not
      * sufficient here: while LLDB is connected to the current gdbstub
      * the socket is `ESTABLISHED`, but we want to wait for the *next*
-     * gdbstub which appears as a fresh `LISTEN` after a CPI. We shell
-     * out to `lsof -sTCP:LISTEN` for an exact answer.
+     * gdbstub which appears as a fresh `LISTEN` after a CPI.
+     * [TcpListenProbe] reads the OS socket table for an exact answer.
      */
-    private fun isPortListening(port: Int): Boolean {
-        return try {
-            val process = ProcessBuilder("lsof", "-nP", "-iTCP:$port", "-sTCP:LISTEN")
-                .redirectErrorStream(true)
-                .start()
-            if (!process.waitFor(LSOF_TIMEOUT.inWholeMilliseconds, TimeUnit.MILLISECONDS)) {
-                process.destroyForcibly()
-                LOG.warn("Gimlet: lsof port probe for $port timed out")
-                return false
-            }
-            process.exitValue() == 0
-        } catch (t: Throwable) {
-            LOG.warn("Gimlet: lsof port probe for $port failed", t)
-            false
-        }
-    }
+    private fun isPortListening(port: Int): Boolean = TcpListenProbe.isListening(port)
 
     /**
      * Resolved lazily - application services aren't always ready at
@@ -817,7 +802,6 @@ internal class GimletAttachOrchestrator(
         // forever.
         private val NEXT_PROGRAM_TIMEOUT: Duration = 2.seconds
         private val SESSION_END_POLL: Duration = 1.seconds
-        private val LSOF_TIMEOUT: Duration = 1_500.milliseconds
 
         /**
          * platform-tools LLDB Python helpers. Order matters:

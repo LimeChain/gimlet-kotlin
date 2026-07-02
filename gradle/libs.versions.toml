@@ -2,6 +2,12 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
+# Keep in lockstep with the oshi-core the target IDE bundles in its
+# performanceTesting plugin (manifest of `plugins/performanceTesting/
+# lib/github.oshi.core.jar` in the IDE distribution) - that is the
+# version JetBrains validated against the IDE's bundled JNA, which we
+# use at runtime instead of shipping our own (see :core dependencies).
+oshi = "6.9.2"
 
 # plugins
 changelog = "2.5.0"
@@ -20,6 +26,7 @@ qodana = "2026.1.3"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
+oshi-core = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
