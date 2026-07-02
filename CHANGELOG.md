@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- fix: replace lsof port probe with OSHI socket-table reads by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/15
+
 ## [0.1.4] - 2026-06-21
 
 - docs: add debug-session screenshot in README by @failfmi
