@@ -42,6 +42,19 @@ repositories {
 }
 
 dependencies {
+    // Cross-OS TCP socket-table reads for TcpListenProbe. JNA and
+    // slf4j are excluded on purpose: the IDE provides both on its
+    // core classpath (`lib/util-8.jar`), every plugin classloader
+    // delegates to it, and bundling a second JNA clashes with the
+    // IDE-managed native dispatch library (`jna.boot.library.path`).
+    // The IDE ships this same oshi-core version in its bundled
+    // performanceTesting plugin against that JNA, so the pairing is
+    // JetBrains-validated.
+    implementation(libs.oshi.core) {
+        exclude(group = "net.java.dev.jna")
+        exclude(group = "org.slf4j")
+    }
+
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
 
