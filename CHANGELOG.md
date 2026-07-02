@@ -2,9 +2,10 @@
 
 ## [Unreleased]
 
-### Fixed
+## [0.1.5] - 2026-07-02
 
 - fix: replace lsof port probe with OSHI socket-table reads by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/15
+- chore(deps): bump gradle-wrapper from 9.6.0 to 9.6.1 by @dependabot[bot] in https://github.com/LimeChain/gimlet-kotlin/pull/14
 
 ## [0.1.4] - 2026-06-21
 
@@ -62,8 +63,9 @@
 - Solana platform-tools v1.54 (installed via the Solana CLI).
 - macOS or Linux.
 
-[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.4...HEAD
-[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.3...v0.1.4
-[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.2...v0.1.3
-[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/v0.1.1
+[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.5...HEAD
+[0.1.5]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.4...0.1.5
+[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.3...0.1.4
+[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.2...0.1.3
+[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.1...0.1.2
+[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/0.1.1
