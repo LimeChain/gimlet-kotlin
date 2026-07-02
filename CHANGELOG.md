@@ -63,9 +63,9 @@
 - Solana platform-tools v1.54 (installed via the Solana CLI).
 - macOS or Linux.
 
-[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.5...HEAD
-[0.1.5]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.4...0.1.5
-[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.3...0.1.4
-[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.2...0.1.3
-[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/0.1.1...0.1.2
-[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/0.1.1
+[Unreleased]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.4...v0.1.5
+[0.1.4]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/LimeChain/gimlet-kotlin/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/LimeChain/gimlet-kotlin/commits/v0.1.1

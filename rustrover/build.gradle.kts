@@ -113,7 +113,7 @@ changelog {
     // than a non-existent one under :rustrover/.
     path = rootProject.layout.projectDirectory.file("CHANGELOG.md").asFile.absolutePath
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
-    versionPrefix = ""
+    versionPrefix = "v"
 }
 
 tasks {
