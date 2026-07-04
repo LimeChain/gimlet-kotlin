@@ -315,9 +315,21 @@ internal class GimletAttachOrchestrator(
             initialPause.isCompleted || session.isPaused
         }
         if (!pauseObserved && requiresInitialPause) {
+            // Post-mortem diagnosis: a never-pausing session is the
+            // signature of platform-tools LLDB failing to load (e.g.
+            // missing OS libpython on Linux). Probe the toolchain now,
+            // on the failure path only, so the notification names the
+            // real cause when there is one.
+            val loadFailure = withContext(Dispatchers.IO) {
+                LldbPathResolver.verifyLoads(lldbPath)
+            }
             notify(
-                "LLDB attached, but the session never paused at entry within " +
-                    "${ATTACH_WAIT.inWholeSeconds}s. Stopping.",
+                if (loadFailure != null) {
+                    LldbPathResolver.loadFailureMessage(lldbPath, loadFailure)
+                } else {
+                    "LLDB attached, but the session never paused at entry within " +
+                        "${ATTACH_WAIT.inWholeSeconds}s. Stopping."
+                },
                 NotificationType.ERROR,
             )
             try {
@@ -461,7 +473,18 @@ internal class GimletAttachOrchestrator(
                 "Cannot resolve LLDB scripts directory from $lldbPath."
             )
 
-        val pythonPaths = withContext(Dispatchers.IO) { discoverPythonPaths(scriptsDir) }
+        // Everything below runs through LLDB's embedded Python, which
+        // only bootstraps when the PYTHONPATH injected at LLDBFrontend
+        // launch (GimletLLDBDriverConfiguration.createDriverCommandLine)
+        // took effect - platform-tools' Linux tarball ships
+        // `dist-packages` while liblldb expects `site-packages`,
+        // leaving `script` dead otherwise. There is no reliable in-band
+        // probe for it (python stdout is not part of
+        // executeInterpreterCommand's result), so a dead interpreter
+        // surfaces at the metadata read, which reports likely causes.
+        val pythonPaths = withContext(Dispatchers.IO) {
+            LldbPathResolver.discoverPythonPackageDirs(lldbPath)
+        }
         if (pythonPaths.isNotEmpty()) {
             val pyList = pythonPaths.joinToString(", ", "[", "]") {
                 lldbQuote(it)
@@ -485,36 +508,6 @@ internal class GimletAttachOrchestrator(
                 continue
             }
             runLldbCommand(debugProcess, "command script import ${lldbQuote(path)}")
-        }
-    }
-
-    /**
-     * Returns the directory to prepend to LLDB's Python `sys.path` /
-     * `PYTHONPATH`: platform-tools' bundled `lib/python<ver>/<*-packages>/`,
-     * auto-discovered relative to the `lldb` binary. Platform-tools
-     * releases pin different Python versions per toolchain version, so
-     * we glob `python*`; the inner directory uses `*-packages` to
-     * match both `site-packages` (macOS / standard CPython) and
-     * `dist-packages` (Linux distros).
-     *
-     * Helper scripts in `bin/` next to lldb are not added - we
-     * `command script import` them by absolute path, so they don't
-     * need to be on the import path.
-     */
-    private fun discoverPythonPaths(scriptsDir: Path): List<Path> {
-        val libDir = scriptsDir.parent?.resolve("lib") ?: return emptyList()
-        if (!Files.isDirectory(libDir)) return emptyList()
-        return try {
-            Files.newDirectoryStream(libDir, "python*").use { pythonDirs ->
-                pythonDirs.flatMap { pyDir ->
-                    Files.newDirectoryStream(pyDir, "*-packages").use { pkgDirs ->
-                        pkgDirs.filter { Files.isDirectory(it) }.toList()
-                    }
-                }
-            }
-        } catch (t: Throwable) {
-            LOG.warn("Gimlet: failed to enumerate $libDir for *-packages", t)
-            emptyList()
         }
     }
 
@@ -542,11 +535,36 @@ internal class GimletAttachOrchestrator(
             val raw = withContext(Dispatchers.IO) {
                 Files.readString(metadataFile).ifBlank { commandOutput }
             }
-            return GdbstubMetadata.parse(raw)
-                ?: throw IllegalStateException(
-                    "Gimlet could not parse gdbstub metadata: " +
-                        raw.lineSequence().firstOrNull()?.take(200).orEmpty(),
-                )
+            when (val outcome = GdbstubMetadata.classify(raw)) {
+                is GdbstubMetadata.ReadOutcome.Parsed -> return outcome.metadata
+
+                // Post-mortem diagnosis: LLDB swallows script errors on
+                // this channel, so distinguish "LLDB's Python is broken"
+                // from "the stub can't answer" by probing the toolchain
+                // now, on the failure path only.
+                is GdbstubMetadata.ReadOutcome.Empty -> {
+                    val loadFailure = withContext(Dispatchers.IO) {
+                        LldbPathResolver.verifyLoads(lldbPath)
+                    }
+                    throw IllegalStateException(
+                        if (loadFailure != null) {
+                            LldbPathResolver.loadFailureMessage(lldbPath, loadFailure)
+                        } else {
+                            // The gdbstub exists since solana-sbpf 0.2.33 but only
+                            // answers `metadata` since 0.14.3, so attach can succeed
+                            // against a stub that returns nothing here.
+                            "The sbpf gdbstub returned no metadata. Gimlet requires " +
+                                "solana-sbpf 0.14.3 or higher in the project under test."
+                        },
+                    )
+                }
+
+                // The stub answered; the content itself is the evidence.
+                is GdbstubMetadata.ReadOutcome.Malformed ->
+                    throw IllegalStateException(
+                        "Gimlet could not parse gdbstub metadata: ${outcome.preview}",
+                    )
+            }
         } finally {
             withContext(Dispatchers.IO) {
                 try {

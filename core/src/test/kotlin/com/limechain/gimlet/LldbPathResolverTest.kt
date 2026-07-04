@@ -92,4 +92,129 @@ class LldbPathResolverTest : BasePlatformTestCase() {
             result.expectedPath,
         )
     }
+
+    // ---- verifyLoads ------------------------------------------------
+
+    /** Writes an executable fake lldb script at [path]. */
+    private fun writeScript(path: Path, body: String) {
+        Files.createDirectories(path.parent)
+        Files.writeString(path, "#!/bin/sh\n$body\n")
+        Files.setPosixFilePermissions(
+            path,
+            setOf(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+            ),
+        )
+    }
+
+    fun testVerifyLoadsPassesWhenProbeTokenComesBack() {
+        val path = expectedPathFor("1.54")
+        // A healthy lldb echoes the full probe command (token in two
+        // halves), then the executed print emits the assembled token
+        // on its own line.
+        writeScript(
+            path,
+            "echo '(lldb) script import lldb; print(\"gimlet-\" + \"python-ok\")'\n" +
+                "echo 'gimlet-python-ok'\n" +
+                "exit 0",
+        )
+        assertNull(LldbPathResolver.verifyLoads(path))
+    }
+
+    fun testVerifyLoadsRejectsCommandEchoWithoutExecution() {
+        val path = expectedPathFor("1.54")
+        // Regression for the echo trap: `lldb --batch -o <cmd>` echoes
+        // the command line before executing it, so output can contain
+        // the assembled token as a substring even when the script dies
+        // before printing. Only a standalone token line counts.
+        writeScript(
+            path,
+            "echo '(lldb) script import lldb; print(\"gimlet-python-ok\")'\n" +
+                "echo 'Traceback (most recent call last):'\n" +
+                "echo \"ModuleNotFoundError: No module named 'lldb'\"\n" +
+                "exit 0",
+        )
+        val detail = LldbPathResolver.verifyLoads(path)
+        assertNotNull("echoed-but-not-executed probe must fail", detail)
+        assertTrue(
+            "detail should carry the traceback's error line, got: $detail",
+            detail!!.contains("No module named"),
+        )
+    }
+
+    fun testVerifyLoadsSurfacesLoaderError() {
+        // The exact failure shape of a missing libpython on Linux: the
+        // dynamic linker prints to stderr and the process dies with 127
+        // before main() ever runs.
+        val path = expectedPathFor("1.54")
+        writeScript(
+            path,
+            "echo 'lldb: error while loading shared libraries: " +
+                "libpython3.10.so.1.0: cannot open shared object file' 1>&2\nexit 127",
+        )
+        val detail = LldbPathResolver.verifyLoads(path)
+        assertNotNull("loader failure must be reported", detail)
+        assertTrue("detail should carry the loader line, got: $detail", detail!!.contains("libpython3.10.so.1.0"))
+    }
+
+    fun testVerifyLoadsSurfacesDeadPythonInterpreter() {
+        // The dist-packages/site-packages mismatch shape: lldb starts
+        // fine (exit 0) but the script command tracebacks and the
+        // token never appears.
+        val path = expectedPathFor("1.54")
+        writeScript(
+            path,
+            "echo 'Traceback (most recent call last):'\n" +
+                "echo '  File \"<string>\", line 1, in <module>'\n" +
+                "echo \"ModuleNotFoundError: No module named 'lldb'\"\n" +
+                "exit 0",
+        )
+        val detail = LldbPathResolver.verifyLoads(path)
+        assertNotNull("dead interpreter must be reported", detail)
+        assertTrue(
+            "detail should carry the traceback's error line, got: $detail",
+            detail!!.contains("No module named"),
+        )
+    }
+
+    fun testVerifyLoadsReportsUnrunnableBinary() {
+        val path = expectedPathFor("1.54")
+        // Exists but is not a program the OS can exec.
+        Files.createDirectories(path.parent)
+        Files.writeString(path, "not a binary")
+        assertNotNull(LldbPathResolver.verifyLoads(path))
+    }
+
+    fun testLoadFailureMessageHintsAtLibpython() {
+        val message = LldbPathResolver.loadFailureMessage(
+            Path.of("/opt/lldb"),
+            "error while loading shared libraries: libpython3.10.so.1.0: cannot open shared object file",
+        )
+        assertTrue("libpython failures should carry the install hint", message.contains("libpython3.10"))
+        assertTrue(message.contains("apt install"))
+    }
+
+    fun testLoadFailureMessageHintsAtMissingLldbModules() {
+        val message = LldbPathResolver.loadFailureMessage(
+            Path.of("/opt/lldb"),
+            "ModuleNotFoundError: No module named 'lldb'",
+        )
+        assertTrue(
+            "missing-module failures should point at the packages dir",
+            message.contains("[site|dist]-packages"),
+        )
+        assertTrue(message.contains("Reinstall platform-tools"))
+    }
+
+    fun testLoadFailureMessageFallsBackToGenericHint() {
+        val message = LldbPathResolver.loadFailureMessage(Path.of("/opt/lldb"), "Segmentation fault")
+        assertTrue("non-python failures should suggest dependency inspection", message.contains("ldd"))
+    }
+
+    fun testFirstMeaningfulLineSkipsBlanksAndTrims() {
+        assertEquals("boom", LldbPathResolver.firstMeaningfulLine("\n\n   boom   \nrest"))
+        assertNull(LldbPathResolver.firstMeaningfulLine("\n \n"))
+    }
 }

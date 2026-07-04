@@ -6,6 +6,7 @@ import com.intellij.execution.filters.TextConsoleBuilder
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebugSessionListener
+import com.jetbrains.cidr.ArchitectureType
 import com.jetbrains.cidr.execution.TrivialRunParameters
 import com.jetbrains.cidr.execution.debugger.CidrDebugProcess
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
@@ -161,10 +162,39 @@ class GimletRemoteGdbDebugProcess(
  */
 @Suppress("UnstableApiUsage")
 class GimletLLDBDriverConfiguration(
-    lldbBinary: Path,
+    private val lldbBinary: Path,
 ) : LLDBDriverConfiguration() {
     init {
         setCustomLLDBPath(lldbBinary.toString())
+    }
+
+    /**
+     * Injects platform-tools' Python package dirs as `PYTHONPATH` into
+     * the LLDBFrontend process. Anza's Linux liblldb bakes a
+     * `site-packages` module search path but the Linux tarball ships
+     * `dist-packages`, so without this the embedded interpreter never
+     * bootstraps: `import lldb` fails at startup, `run_one_line` is
+     * undefined, and every `script`-based command - including the
+     * `solana_save_output` gdbstub metadata read - is dead. It must
+     * happen at launch: Python seals `sys.path` from the environment
+     * at interpreter init, so no in-session `script` patch can
+     * resurrect an interpreter that failed to bootstrap. Existing
+     * `PYTHONPATH` entries are preserved after ours.
+     */
+    override fun createDriverCommandLine(
+        driver: DebuggerDriver,
+        architectureType: ArchitectureType,
+    ): GeneralCommandLine {
+        val commandLine = super.createDriverCommandLine(driver, architectureType)
+        val packageDirs = LldbPathResolver.discoverPythonPackageDirs(lldbBinary)
+        if (packageDirs.isNotEmpty()) {
+            val existing = commandLine.environment["PYTHONPATH"] ?: System.getenv("PYTHONPATH")
+            commandLine.environment["PYTHONPATH"] =
+                (packageDirs.map(Path::toString) + listOfNotNull(existing))
+                    .joinToString(File.pathSeparator)
+            LOG.info("Gimlet: PYTHONPATH for LLDBFrontend = ${commandLine.environment["PYTHONPATH"]}")
+        }
+        return commandLine
     }
 
     override fun isContinueAfterAttachNeeded(): Boolean = false

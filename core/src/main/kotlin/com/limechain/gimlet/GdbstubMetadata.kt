@@ -10,11 +10,39 @@ internal data class GdbstubMetadata(
     val cpiLevel: Int,
     val caller: String?,
 ) {
+    /**
+     * Three-way outcome of a metadata read. [Empty] and [Malformed]
+     * are distinct failures with different causes: an empty reply
+     * means the script command never executed or the stub didn't
+     * answer (toolchain / stub-version problem - the caller runs a
+     * post-mortem toolchain probe), while a malformed reply means the
+     * stub answered and the content itself is the evidence to show.
+     */
+    sealed interface ReadOutcome {
+        data class Parsed(val metadata: GdbstubMetadata) : ReadOutcome
+        data object Empty : ReadOutcome
+        data class Malformed(val preview: String) : ReadOutcome
+    }
+
     companion object {
         // Conservative base58 shape check - 32-44 chars, no 0/O/I/l. Not
         // a full decode, just rejects obvious garbage from a partial /
         // truncated read.
         private val PUBKEY_SHAPE = Regex("^[1-9A-HJ-NP-Za-km-z]{32,44}$")
+
+        /** Classify the raw output of a metadata read. */
+        fun classify(raw: String): ReadOutcome {
+            val firstLine = raw.lineSequence()
+                .map { it.trim() }
+                .firstOrNull { it.isNotEmpty() }
+                ?: return ReadOutcome.Empty
+            val parsed = parse(raw)
+            return if (parsed != null) {
+                ReadOutcome.Parsed(parsed)
+            } else {
+                ReadOutcome.Malformed(firstLine.take(200))
+            }
+        }
 
         /**
          * Parse the file content. `solana_save_output` writes the LLDB
@@ -22,7 +50,7 @@ internal data class GdbstubMetadata(
          * - we take the first non-empty line. Returns null if
          * `program_id` is missing or malformed.
          */
-        fun parse(raw: String): GdbstubMetadata? {
+        private fun parse(raw: String): GdbstubMetadata? {
             val firstLine = raw.lineSequence()
                 .map { it.trim() }
                 .firstOrNull { it.isNotEmpty() }
