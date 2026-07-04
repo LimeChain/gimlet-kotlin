@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-07-04
+
+### Fixed
+
+- fix: bootstrap platform-tools LLDB's embedded Python on Linux by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/17
+
+### Added
+
+- Attach failures now self-diagnose toolchain problems (missing OS `libpython`, missing LLDB Python modules, or a solana-sbpf older than 0.14.3) with targeted error notifications by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/17
+
 ## [0.1.5] - 2026-07-02
 
 - fix: replace lsof port probe with OSHI socket-table reads by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/15
