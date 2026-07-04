@@ -38,7 +38,7 @@ private val LOG = logger<TcpListenProbe>()
 internal object TcpListenProbe {
 
     /**
-     * oshi memoizes the OS handle internally; the stats object is a
+     * oshi memorizes the OS handle internally; the stats object is a
      * stateless view whose `connections` takes a fresh socket-table
      * snapshot on every call.
      */
