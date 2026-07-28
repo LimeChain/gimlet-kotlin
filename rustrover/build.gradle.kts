@@ -23,7 +23,7 @@ group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 repositories {
@@ -42,7 +42,6 @@ dependencies {
 
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
-        bundledModules(providers.gradleProperty("platformBundledModules").map { it.split(',') })
 
         testFramework(TestFrameworkType.Platform)
     }
@@ -101,7 +100,9 @@ intellijPlatform {
 
     pluginVerification {
         ides {
+            // Oldest supported build (same as the compile/sandbox target)...
             create(IntelliJPlatformType.RustRover, providers.gradleProperty("platformVersion"))
+            recommended()
         }
     }
 }
