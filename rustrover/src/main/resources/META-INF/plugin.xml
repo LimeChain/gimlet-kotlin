@@ -20,22 +20,6 @@
     <depends>com.intellij.modules.cidr.debugger</depends>
     <depends>com.jetbrains.rust</depends>
 
-    <!--
-      v2 content-module dependency. `intellij.rustrover.debugger.runners`
-      lives in the RustRover IDE core (lib/intellij.rustrover.debugger.runners.jar),
-      not in a bundled plugin we could `<depends>` on. Declaring it as
-      a `<module>` here makes
-      `com.intellij.rustrover.debugger.runners.core.RsCidrRunProfile`
-      reachable from our plugin classloader - that's the marker
-      interface our `GimletRunConfiguration` implements.
-
-      Mixing v1 `<depends>` blocks above with this v2 `<dependencies>`
-      block is supported by the IntelliJ Platform descriptor parser.
-    -->
-    <dependencies>
-        <module name="intellij.rustrover.debugger.runners"/>
-    </dependencies>
-
     <!-- All user-visible strings route through this bundle (defined in :core). -->
     <resource-bundle>messages.GimletBundle</resource-bundle>
 
@@ -58,6 +42,9 @@
         -->
         <configurationType
             implementation="com.limechain.gimlet.rustrover.GimletRunConfigurationType"/>
+        <programRunner
+            id="GimletCidrRunner"
+            implementation="com.limechain.gimlet.rustrover.GimletCidrRunner"/>
 
         <notificationGroup id="Gimlet"
                            displayType="BALLOON"

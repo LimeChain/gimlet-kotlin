@@ -12,8 +12,8 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.options.SettingsEditorGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
-import com.intellij.rustrover.debugger.runners.core.RsCidrRunProfile
 import com.jetbrains.cidr.execution.CidrCommandLineState
+import com.jetbrains.cidr.execution.CidrRunProfile
 import org.jdom.Element
 import java.nio.file.Path
 
@@ -38,9 +38,13 @@ import java.nio.file.Path
  * proper run-config flow. CidrCommandLineState + CidrLauncher's
  * `startDebugProcess` wrapper does the setup that suppresses the bug.
  *
- * Implementing `RsCidrRunProfile` keeps us on the Rust plugin's
- * blessed remote-debug code path. The interface is empty - a marker -
- * but the platform's program-runner registry filters by it.
+ * Implementing the public `CidrRunProfile` API keeps us on the native
+ * debugger's run path. RustRover's `RsCidrRunProfile` only extends
+ * this interface without adding behavior, but it lives in the private
+ * `intellij.rustrover.debugger.runners` module as of later 2026.1
+ * builds. Depending on that private module prevents the plugin from
+ * loading. [GimletCidrRunner] supplies the public-API runner that
+ * RustRover otherwise narrows to its private marker.
  * `RunConfigurationWithSuppressedDefaultRunAction` hides the
  * non-debug Run action from the gutter; only Debug makes sense.
  */
@@ -49,7 +53,7 @@ class GimletRunConfiguration(
     factory: ConfigurationFactory,
     name: String,
 ) : RunConfigurationBase<Element>(project, factory, name),
-    RsCidrRunProfile,
+    CidrRunProfile,
     RunConfigurationWithSuppressedDefaultRunAction {
 
     /** Path to platform-tools' `lldb` binary. Set by the strategy before submission. */
@@ -63,8 +67,7 @@ class GimletRunConfiguration(
 
     // Return type is CommandLineState (not the broader RunProfileState
     // we'd inherit from RunConfiguration alone) because the
-    // CidrRunProfile interface - pulled in via RsCidrRunProfile -
-    // narrows the contract. CidrCommandLineState extends
+    // CidrRunProfile narrows the contract. CidrCommandLineState extends
     // CommandLineState, so the narrower return type is satisfied.
     override fun getState(executor: Executor, environment: ExecutionEnvironment): CommandLineState {
         val bin = lldbBinary

@@ -11,16 +11,15 @@ oshi = "6.9.2"
 
 # plugins
 changelog = "2.5.0"
-intelliJPlatform = "2.13.1"
-# Must match the kotlin-stdlib bundled in the target IDE. Compiling
-# with a newer Kotlin emits debug-metadata v2 that the older bundled
-# coroutines-debug agent rejects with `Debug metadata version mismatch.
-# Expected: 1, got 2.`, which crashes any suspend function on
-# Dispatchers.EDT. Verify the bundled stdlib (decompile
-# `kotlin.KotlinVersionCurrentValue` from `lib/util-8.jar` in the
-# downloaded IDE distribution) and bump this in lockstep with
-# platformVersion.
-kotlin = "2.2.0"
+intelliJPlatform = "2.18.1"
+# Must not exceed the kotlin-stdlib bundled in the oldest supported
+# IDE (pluginSinceBuild): newer-compiled classes emit coroutines
+# debug-metadata the older bundled debug agent rejects, crashing
+# suspend functions. Verify the bundled version by decompiling
+# `kotlin.KotlinVersionCurrentValue` from `lib/util-8.jar` in the IDE
+# distribution and bump in lockstep with platformVersion.
+# RustRover 2026.2 bundles Kotlin 2.4.0.
+kotlin = "2.4.0"
 qodana = "2026.1.3"
 
 [libraries]
