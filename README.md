@@ -40,7 +40,7 @@ Before using Gimlet, ensure you have the following tools installed:
 
 | Tool             | Installation Command                                      | Notes                |
 |------------------|-----------------------------------------------------------|----------------------|
-| RustRover        | [JetBrains site](https://www.jetbrains.com/rust/)         | Version 2026.1+      |
+| RustRover        | [JetBrains site](https://www.jetbrains.com/rust/)         | Version 2026.2+      |
 | `solana-cli`     | [Solana Docs](https://solana.com/docs/intro/installation) | Use latest version   |
 | `platform-tools` | [Solana Docs](https://solana.com/docs/intro/installation) | Use versions >= 1.54 |
 
