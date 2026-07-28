@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-07-28
+
+### Changed
+
+- Gimlet now requires RustRover 2026.2 or later (build number 262.8665+). RustRover 2026.1.x keeps receiving Gimlet 0.1.6 from the Marketplace by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/19
+- chore: tooling pins and docs with the 2026.2 toolchain by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/20
+
+### Fixed
+
+- fix: target RustRover 2026.2 (262.*) via public debugger APIs - replaces the private `RsCidrRunProfile` marker (its module became private to the Rust plugin in 2026.1.4) with the public `CidrRunProfile` and a dedicated `GimletCidrRunner` by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/19
+
 ## [0.1.6] - 2026-07-04
 
 ### Fixed
