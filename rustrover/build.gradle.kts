@@ -82,7 +82,7 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            untilBuild = provider { null }
         }
     }
 
@@ -101,7 +101,9 @@ intellijPlatform {
 
     pluginVerification {
         ides {
+            // Oldest supported build (same as the compile/sandbox target)...
             create(IntelliJPlatformType.RustRover, providers.gradleProperty("platformVersion"))
+            recommended()
         }
     }
 }
