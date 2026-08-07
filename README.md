@@ -4,16 +4,32 @@ Gimlet is a RustRover plugin that makes Solana program debugging seamless, autom
 
 <!-- Plugin description -->
 **Gimlet** lets you step-debug Solana SBPF programs from RustRover.
-Run your debug-enabled test from a terminal; once sbpf's gdbstub binds
-the port, the **Gimlet** tool window flips to *Ready* - click **Attach
-Debugger** and the plugin attaches the platform-tools LLDB with the
-matching `.so.debug` symbols, pausing at your breakpoint. Cross-program
-invocations (CPIs) auto-attach new concurrent debug sessions for the
-inner programs - breakpoints in any program in the chain hit with
-correct source resolution.
+
+Run your debug-enabled test from a terminal; once the framework's gdbstub binds
+the port, the **Gimlet** tool window flips to *Ready*. Click **Attach Debugger**
+and Gimlet attaches the platform-tools LLDB with the matching `.so.debug`
+symbols, pausing at your breakpoint.
+
+- **Source-level breakpoints in your Rust code** - threads, stack frames,
+  variables, and the LLDB console all populate as expected.
+- **Cross-program invocation (CPI) debugging** - each inner program gets its own
+  concurrent debug session, with source resolved per `program_id`. Breakpoints
+  anywhere in the chain hit, including post-CPI code.
+- **No IDE-side toolchain setup** - Gimlet computes the LLDB path from the
+  platform-tools version; there is no debugger or interpreter to configure.
+- **Per-project settings** at *Settings → Tools → Gimlet* - TCP port,
+  platform-tools version, stop-on-entry, and path overrides for platform-tools,
+  the SBF trace directory, and build artifacts.
+
+**Requirements:** RustRover 2026.2 or later, macOS or Linux, Solana
+platform-tools v1.54 or later, and a test framework built with the
+`sbpf-debugger` feature - [mollusk-svm](https://crates.io/crates/mollusk-svm)
+0.13.0+ or [litesvm](https://crates.io/crates/litesvm) 0.13.0+.
+
+[Setup guide](https://github.com/LimeChain/gimlet-kotlin#getting-started-with-gimlet) · [Issue tracker](https://github.com/LimeChain/gimlet-kotlin/issues)
+<!-- Plugin description end -->
 
 ![Gimlet](https://raw.githubusercontent.com/LimeChain/gimlet-kotlin/main/images/gimlet.png)
-<!-- Plugin description end -->
 
 ---
 
