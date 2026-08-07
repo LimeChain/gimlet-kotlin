@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-08-07
+
 ### Changed
 
 - docs: restructure the plugin description with bullets, requirements, and resource links
