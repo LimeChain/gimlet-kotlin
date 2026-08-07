@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- docs: restructure the plugin description with bullets, requirements, and resource links
+
+### Fixed
+
+- docs: drop the debug-session screenshot from the plugin description
+
 ## [0.1.7] - 2026-07-28
 
 ### Changed
