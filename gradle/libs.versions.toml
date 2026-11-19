@@ -11,7 +11,7 @@ oshi = "6.9.2"
 
 # plugins
 changelog = "2.5.0"
-intelliJPlatform = "2.18.1"
+intelliJPlatform = "2.20.1"
 # Must not exceed the kotlin-stdlib bundled in the oldest supported
 # IDE (pluginSinceBuild): newer-compiled classes emit coroutines
 # debug-metadata the older bundled debug agent rejects, crashing
