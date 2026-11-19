@@ -1,7 +1,7 @@
 package com.limechain.gimlet
 
 import com.intellij.openapi.diagnostic.logger
-import oshi.SystemInfo
+import oshi.ffm.SystemInfo
 import oshi.software.os.InternetProtocolStats.TcpState
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -26,11 +26,9 @@ private val LOG = logger<TcpListenProbe>()
  * so we read it through OSHI - `/proc/net/tcp` on Linux, `sysctl` on
  * macOS, `GetExtendedTcpTable` on Windows.
  *
- * oshi-core is bundled with the plugin, minus its JNA and slf4j
- * transitives: the IDE provides both (slf4j on the core classpath,
- * JNA in its bundled JNA plugin), and a second JNA copy would clash
- * with the IDE-managed native dispatch library
- * (`jna.boot.library.path`).
+ * oshi-core-ffm (OSHI on Java's Foreign Function & Memory API, no
+ * JNA) is bundled with the plugin, minus its slf4j transitive, which
+ * the IDE provides on the core classpath.
  */
 internal object TcpListenProbe {
 

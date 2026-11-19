@@ -18,10 +18,9 @@ updates:
       # IntelliJ Platform Gradle Plugin — runtime API surface can shift
       # between bumps. Verify manually.
       - dependency-name: "org.jetbrains.intellij.platform*"
-      # oshi runs against the IDE's bundled JNA (excluded from our
-      # dependency on purpose); newer oshi may need newer JNA than the
-      # IDE provides. Bump manually against the target IDE's JNA, in
-      # lockstep with platformVersion.
+      # oshi must match the version the target IDE bundles in its
+      # performanceTesting plugin (that copy is visible on our
+      # classpath). Bump manually in lockstep with platformVersion.
       - dependency-name: "com.github.oshi*"
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"

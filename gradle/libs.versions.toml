@@ -2,12 +2,11 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
-# Runs against the IDE's bundled JNA instead of shipping our own (see
-# :core dependencies), so its required JNA range (`Import-Package` in
-# the jar manifest) must cover `com.sun.jna.Version` in the target
-# IDE's `plugins/jna-plugin`. RustRover 2026.3 ships JNA 5.19.1;
-# oshi 6.9.2 needs [5.18,6).
-oshi = "6.9.2"
+# Keep in lockstep with the oshi the target IDE bundles in its
+# performanceTesting plugin (`META-INF/maven/com.github.oshi/` in
+# `plugins/performanceTesting/lib/intellij.libraries.oshi.core.jar`):
+# that copy is visible on our classpath, so versions must not mix.
+oshi = "7.6.1"
 
 # plugins
 changelog = "2.5.0"
@@ -25,7 +24,7 @@ qodana = "2026.2.2"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
-oshi-core = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
+oshi-core-ffm = { group = "com.github.oshi", name = "oshi-core-ffm", version.ref = "oshi" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
