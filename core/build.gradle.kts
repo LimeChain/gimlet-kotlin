@@ -43,7 +43,7 @@ repositories {
 
 dependencies {
     // Cross-OS TCP socket-table reads for TcpListenProbe, through
-    // OSHI's FFM flavor (no JNA). slf4j is excluded on purpose: the
+    // oshi-core-ffm (no JNA). slf4j is excluded on purpose: the
     // IDE provides it on its core classpath.
     implementation(libs.oshi.core.ffm) {
         exclude(group = "org.slf4j")

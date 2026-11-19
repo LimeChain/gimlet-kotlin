@@ -26,9 +26,9 @@ private val LOG = logger<TcpListenProbe>()
  * so we read it through OSHI - `/proc/net/tcp` on Linux, `sysctl` on
  * macOS, `GetExtendedTcpTable` on Windows.
  *
- * oshi-core-ffm (OSHI's Foreign Function & Memory flavor, no JNA) is
- * bundled with the plugin, minus its slf4j transitive, which the IDE
- * provides on the core classpath.
+ * oshi-core-ffm (OSHI on Java's Foreign Function & Memory API, no
+ * JNA) is bundled with the plugin, minus its slf4j transitive, which
+ * the IDE provides on the core classpath.
  */
 internal object TcpListenProbe {
 
