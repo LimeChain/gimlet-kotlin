@@ -21,7 +21,7 @@ symbols, pausing at your breakpoint.
   platform-tools version, stop-on-entry, and path overrides for platform-tools,
   the SBF trace directory, and build artifacts.
 
-**Requirements:** RustRover 2026.2 or later, macOS or Linux, Solana
+**Requirements:** RustRover 2026.3 or later, macOS or Linux, Solana
 platform-tools v1.54 or later, and a test framework built with the
 `sbpf-debugger` feature - [mollusk-svm](https://crates.io/crates/mollusk-svm)
 0.13.0+ or [litesvm](https://crates.io/crates/litesvm) 0.13.0+.
@@ -56,7 +56,7 @@ Before using Gimlet, ensure you have the following tools installed:
 
 | Tool             | Installation Command                                      | Notes                |
 |------------------|-----------------------------------------------------------|----------------------|
-| RustRover        | [JetBrains site](https://www.jetbrains.com/rust/)         | Version 2026.2+      |
+| RustRover        | [JetBrains site](https://www.jetbrains.com/rust/)         | Version 2026.3+      |
 | `solana-cli`     | [Solana Docs](https://solana.com/docs/intro/installation) | Use latest version   |
 | `platform-tools` | [Solana Docs](https://solana.com/docs/intro/installation) | Use versions >= 1.54 |
 
