@@ -1,4 +1,5 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 // :core is the IDE-agnostic library subproject. It carries every
 // production source file and every test in the gimlet plugin today.
@@ -31,6 +32,12 @@ version = providers.gradleProperty("pluginVersion").get()
 
 kotlin {
     jvmToolchain(25)
+    compilerOptions {
+        // Without this the compiler generates delegating overrides for
+        // platform interface defaults, which Plugin Verifier reports as
+        // deprecated / experimental API usages.
+        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+    }
 }
 
 repositories {
