@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-11-19
+
+### Changed
+
+- Gimlet now requires RustRover 2026.3 or later (build number 263.7307+). RustRover 2026.2.x keeps receiving Gimlet 0.1.8 from the Marketplace by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/43
+
 ## [0.1.8] - 2026-08-07
 
 ### Changed
