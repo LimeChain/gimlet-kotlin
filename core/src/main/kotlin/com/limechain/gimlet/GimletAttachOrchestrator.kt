@@ -403,7 +403,7 @@ internal class GimletAttachOrchestrator(
     ): Pair<GdbstubMetadata, Path> {
         LOG.info("Gimlet: loadProgramModulesPostAttach starting")
         // Diagnostic: log the LLDB version so we know which framework
-        // got loaded. If `setCustomLLDBPath` triggered CIDR's
+        // got loaded. If `customLLDBPath` triggered CIDR's
         // `initCustomMacLldb` and the DYLD_FRAMEWORK_PATH symlink
         // resolved to platform-tools' liblldb, this should report
         // `lldb version 20.1.7-rust-dev`. If it reports a JetBrains

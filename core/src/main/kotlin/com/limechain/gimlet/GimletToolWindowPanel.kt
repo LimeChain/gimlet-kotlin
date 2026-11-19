@@ -39,7 +39,7 @@ internal class GimletToolWindowPanel(
 
     private val statusLabel = JBLabel()
     private val helpLabel = JBLabel().apply {
-        setAllowAutoWrapping(true)
+        isAllowAutoWrapping = true
         verticalAlignment = JBLabel.TOP
     }
     private val attachButton = JButton("Attach Debugger").apply {
@@ -54,6 +54,8 @@ internal class GimletToolWindowPanel(
     }
 
     init {
+        // Kotlin sees `content` as read-only (nullable getter, non-null setter).
+        @Suppress("UsePropertyAccessSyntax")
         setContent(buildContent())
 
         connection.subscribe(GimletStateMonitor.TOPIC, GimletStateListener { state ->

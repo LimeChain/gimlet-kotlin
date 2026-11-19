@@ -21,7 +21,7 @@ private val LOG = logger<LldbPathResolver>()
  * `e_machine = EM_BPF` (rejects symbol loads with `error: unsupported
  * module`), so we always point CIDR at the platform-tools LLDB fork.
  * The override flows through [GimletLLDBDriverConfiguration]'s
- * `setCustomLLDBPath` call, which fires CIDR's `initCustomMacLldb` /
+ * `customLLDBPath`, which fires CIDR's `initCustomMacLldb` /
  * `initCustomLinuxLldb` hooks at command-line construction.
  */
 internal object LldbPathResolver {
