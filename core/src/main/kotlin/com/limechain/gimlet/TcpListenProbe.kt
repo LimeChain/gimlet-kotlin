@@ -27,13 +27,10 @@ private val LOG = logger<TcpListenProbe>()
  * macOS, `GetExtendedTcpTable` on Windows.
  *
  * oshi-core is bundled with the plugin, minus its JNA and slf4j
- * transitives: the IDE provides both on the core classpath
- * (`lib/util-8.jar`), and a second JNA copy would clash with the
- * IDE-managed native dispatch library (`jna.boot.library.path`). The
- * IDE ships the same oshi-core version inside its bundled
- * `performanceTesting` plugin against that same JNA, so the pairing
- * is JetBrains-validated - we bundle our own copy only because
- * another plugin's libraries aren't on our classpath.
+ * transitives: the IDE provides both (slf4j on the core classpath,
+ * JNA in its bundled JNA plugin), and a second JNA copy would clash
+ * with the IDE-managed native dispatch library
+ * (`jna.boot.library.path`).
  */
 internal object TcpListenProbe {
 

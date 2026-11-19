@@ -20,9 +20,8 @@ updates:
       - dependency-name: "org.jetbrains.intellij.platform*"
       # oshi runs against the IDE's bundled JNA (excluded from our
       # dependency on purpose); newer oshi may need newer JNA than the
-      # IDE provides. Keep pinned to the version the target IDE ships
-      # in its performanceTesting plugin; bump manually in lockstep
-      # with platformVersion.
+      # IDE provides. Bump manually against the target IDE's JNA, in
+      # lockstep with platformVersion.
       - dependency-name: "com.github.oshi*"
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
