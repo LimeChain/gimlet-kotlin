@@ -39,12 +39,20 @@ internal object TcpListenProbe {
      */
     private val ipStats by lazy { SystemInfo().operatingSystem.internetProtocolStats }
 
+    /** True when the most recent [isListening] call could not read the socket table. */
+    @Volatile
+    var lastProbeFailed: Boolean = false
+        private set
+
     fun isListening(port: Int): Boolean {
         return try {
-            ipStats.connections.any { connection ->
+            val listening = ipStats.connections.any { connection ->
                 connection.state == TcpState.LISTEN && connection.localPort == port
             }
+            lastProbeFailed = false
+            listening
         } catch (t: Throwable) {
+            lastProbeFailed = true
             warnOnce(t)
             false
         }
