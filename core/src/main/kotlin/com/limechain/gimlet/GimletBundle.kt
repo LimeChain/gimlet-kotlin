@@ -18,7 +18,7 @@ private const val BUNDLE = "messages.GimletBundle"
  *   GimletBundle.message("settings.title")
  *   GimletBundle.message("error.missingSymbols.body", programName)
  */
-internal object GimletBundle : DynamicBundle(BUNDLE) {
+internal object GimletBundle : DynamicBundle(GimletBundle::class.java, BUNDLE) {
     @Nls
     fun message(
         @PropertyKey(resourceBundle = BUNDLE) key: String,
