@@ -42,14 +42,10 @@ repositories {
 }
 
 dependencies {
-    // Cross-OS TCP socket-table reads for TcpListenProbe. JNA and
-    // slf4j are excluded on purpose: the IDE provides both (slf4j on
-    // its core classpath, JNA in its bundled JNA plugin, reached
-    // through our plugin dependencies), and bundling a second JNA
-    // clashes with the IDE-managed native dispatch library
-    // (`jna.boot.library.path`).
-    implementation(libs.oshi.core) {
-        exclude(group = "net.java.dev.jna")
+    // Cross-OS TCP socket-table reads for TcpListenProbe, through
+    // OSHI's FFM flavor (no JNA). slf4j is excluded on purpose: the
+    // IDE provides it on its core classpath.
+    implementation(libs.oshi.core.ffm) {
         exclude(group = "org.slf4j")
     }
 
