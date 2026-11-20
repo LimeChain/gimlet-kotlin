@@ -174,6 +174,9 @@ internal class GimletAttachOrchestrator(
                 if (epoch.get() != myEpoch) return
                 if (!nextDetected) {
                     LOG.info("Gimlet: no next gdbstub within ${NEXT_PROGRAM_TIMEOUT.inWholeSeconds}s and no sessions alive; ending chain")
+                    // Only the first wait follows an Attach click; later
+                    // ones end the chain normally when the test finishes.
+                    if (iteration == 0) notify(noListenerMessage(tcpPort), NotificationType.WARNING)
                     return
                 }
                 if (iteration > 0) {
@@ -403,7 +406,7 @@ internal class GimletAttachOrchestrator(
     ): Pair<GdbstubMetadata, Path> {
         LOG.info("Gimlet: loadProgramModulesPostAttach starting")
         // Diagnostic: log the LLDB version so we know which framework
-        // got loaded. If `setCustomLLDBPath` triggered CIDR's
+        // got loaded. If `customLLDBPath` triggered CIDR's
         // `initCustomMacLldb` and the DYLD_FRAMEWORK_PATH symlink
         // resolved to platform-tools' liblldb, this should report
         // `lldb version 20.1.7-rust-dev`. If it reports a JetBrains
@@ -614,6 +617,15 @@ internal class GimletAttachOrchestrator(
      * [TcpListenProbe] reads the OS socket table for an exact answer.
      */
     private fun isPortListening(port: Int): Boolean = TcpListenProbe.isListening(port)
+
+    private fun noListenerMessage(port: Int): String =
+        if (TcpListenProbe.lastProbeFailed) {
+            "Gimlet could not read the OS socket table, so it can't tell whether a gdbstub " +
+                "is listening on port $port. See idea.log for details."
+        } else {
+            "No gdbstub is listening on port $port. Make sure cargo test is still running " +
+                "with the sbpf-debugger feature, then click Attach Debugger again."
+        }
 
     /**
      * Resolved lazily - application services aren't always ready at

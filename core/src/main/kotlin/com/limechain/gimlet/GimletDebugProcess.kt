@@ -141,7 +141,7 @@ class GimletRemoteGdbDebugProcess(
 /**
  * [LLDBDriverConfiguration] subclass that does two things:
  *
- *  1. Calls `setCustomLLDBPath` in `init` so CIDR's
+ *  1. Sets `customLLDBPath` in `init` so CIDR's
  *     `CustomLLDBSupportKt.initCustomMacLldb` (or `initCustomLinuxLldb`)
  *     hooks fire at command-line construction time. On macOS that
  *     constructs `<temp>/LLDB.framework/LLDB → liblldb.dylib` and sets
@@ -165,7 +165,7 @@ class GimletLLDBDriverConfiguration(
     private val lldbBinary: Path,
 ) : LLDBDriverConfiguration() {
     init {
-        setCustomLLDBPath(lldbBinary.toString())
+        customLLDBPath = lldbBinary.toString()
     }
 
     /**
