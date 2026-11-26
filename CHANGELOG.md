@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-11-26
+
+### Changed
+
+- chore: switch OSHI to oshi-core-ffm 7.6.1 by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/46
+
+### Fixed
+
+- fix: show a notification when Attach finds no listening gdbstub by @failfmi in https://github.com/LimeChain/gimlet-kotlin/pull/47
+
 ## [0.1.9] - 2026-11-19
 
 ### Changed
