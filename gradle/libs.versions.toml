@@ -19,7 +19,7 @@ intelliJPlatform = "2.20.1"
 # distribution and bump in lockstep with platformVersion.
 # RustRover 2026.3 bundles Kotlin 2.4.21.
 kotlin = "2.4.21"
-qodana = "2026.2.2"
+qodana = "2026.3.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
